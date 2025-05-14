@@ -1,0 +1,228 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sample API",
+    "version": "1.0.0",
+    "description": "A sample API with endpoints for data-sources, uploads, and task statuses."
+  },
+  "paths": {
+    "/data-sources": {
+      "get": {
+        "summary": "Retrieve a list of data sources",
+        "responses": {
+          "200": {
+            "description": "A JSON array of DataSource objects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSourcesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads": {
+      "post": {
+        "summary": "Submit an upload request",
+        "requestBody": {
+          "description": "Upload request with a data_source string value",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadsPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created"
+          }
+        }
+      },
+      "get": {
+        "summary": "Retrieve a list of uploads and the active upload progress",
+        "responses": {
+          "200": {
+            "description": "A JSON object with a list of Upload objects and an optional active upload progress value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/{upload_id}/task-statuses": {
+      "get": {
+        "summary": "Retrieve task statuses for a specific upload",
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "description": "The upload identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON object containing the task statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DataSource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO-8601 formatted date and time"
+          }
+        },
+        "required": ["id", "date"]
+      },
+      "DataSourcesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataSource"
+            }
+          }
+        },
+        "required": ["data"]
+      },
+      "UploadsPostBody": {
+        "type": "object",
+        "properties": {
+          "data_source": {
+            "type": "string"
+          }
+        },
+        "required": ["data_source"]
+      },
+      "Upload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "copy_source": {
+            "type": "string"
+          },
+          "is_production": {
+            "type": "string",
+            "description": "Flag indicating production status; provided as a string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "error_message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional error message associated with the upload"
+          }
+        },
+        "required": ["id", "start_time", "copy_source", "is_production", "status"]
+      },
+      "UploadsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Upload"
+            }
+          },
+          "active_upload_progress": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true,
+            "description": "A float representing percent complete between 0 and 100; may be omitted or null"
+          }
+        },
+        "required": ["data"]
+      },
+      "TaskStatuses": {
+        "type": "object",
+        "properties": {
+          "upload_start": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "copy_start": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "upload_step_one": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "upload_step_two": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "upload_step_three": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "copy_step_one": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "copy_step_two": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "copy_step_three": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "upload_final_step": {
+            "$ref": "#/components/schemas/Status"
+          }
+        }
+      },
+      "TaskStatusesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TaskStatuses"
+          }
+        },
+        "required": ["data"]
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "completed",
+          "error",
+          "pending",
+          "in_progress"
+        ]
+      }
+    }
+  }
+}
